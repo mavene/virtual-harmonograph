@@ -4,10 +4,6 @@ This is an extension to the original project for 50.017 - Graphics & Visualisati
 
 This iteration integrates a "reconstruction testbed" to try out different techniques on the generated harmonograph's point cloud. 
 
-## Features
-
-
-
 ## Instructions
 
     mkdir build
