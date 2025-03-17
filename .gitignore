@@ -1,3 +1,7 @@
 build/*
 .vscode/*
+.DS_Store
 
+old_main.cpp
+BPA.*
+Adaptive_BPA.*
