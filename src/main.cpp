@@ -375,11 +375,11 @@ std::vector<glm::vec3> calculateNormals(const std::vector<float> &vertices)
             nextPoint = glm::vec3(vertices[i - 3], vertices[i - 2], vertices[i - 1]);
         }
         glm::vec3 tangent = glm::normalize(nextPoint - currentPoint);
-        // normals.push_back(tangent);
+        normals.push_back(tangent); // For now, it looks nicer with the directional so its not strictly normals
 
         // Calculate the normal (90deg rotation)
-        glm::vec3 normal = glm::vec3(-tangent.y, tangent.x, 0.0f);
-        normals.push_back(normal);
+        // glm::vec3 normal = glm::vec3(-tangent.y, tangent.x, 0.0f);
+        // normals.push_back(normal);
     }
     return normals;
 }

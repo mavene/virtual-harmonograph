@@ -3,7 +3,7 @@ cmake_policy(VERSION 3.28)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
-project(new_harmonograph)
+project(harmonograph)
 
 list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 
