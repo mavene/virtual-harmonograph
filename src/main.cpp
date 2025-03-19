@@ -666,7 +666,7 @@ void drawSurface(unsigned int indexVBO, unsigned int normalVBO, const std::vecto
 ///                                      Harmonograph Function
 ///=========================================================================================///
 
-void drawHarmonograph(float animationTime, bool reconstructSurface)
+void drawHarmonograph(float animationTime, bool reconstructSurface, unsigned int shaderProgram)
 {
     // Buffers for harmonograph line segments
     unsigned int VBO, VAO;
@@ -701,7 +701,7 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
     // glDrawArrays(GL_LINE_STRIP, 0, vertices.size() / 3);
 
     // Draw point cloud
-    glPointSize(5);
+    glPointSize(3); // 5
     glDrawArrays(GL_POINTS, 0, vertices.size() / 3);
 
     // Extrude surface
@@ -938,7 +938,13 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
             std::vector<unsigned int> tubeIndices;
             std::vector<glm::vec3> tubeNormals;
 
-            static float tubeRadius = 0.02f;
+            // This is just for visualisation!
+            // std::vector<glm::vec3> frameTangents;
+            // std::vector<glm::vec3> frameNormals;
+            // std::vector<glm::vec3> frameBinormals;
+            // std::vector<glm::vec3> framePositions;
+
+            static float tubeRadius = 0.05f; // prev 0.005f for visualizing the TNB
             static int segments = 12;
 
             std::vector<glm::vec3> pathPoints;
@@ -994,6 +1000,12 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
 
             glm::vec3 binormal = glm::normalize(glm::cross(tangent, normal));
 
+            // This is just for visualization!
+            // framePositions.push_back(pathPoints[0]);
+            // frameTangents.push_back(tangent);
+            // frameNormals.push_back(normal);
+            // frameBinormals.push_back(binormal);
+
             for (size_t i = 0; i < numPathPoints; ++i)
             {
                 glm::vec3 currentPoint = pathPoints[i];
@@ -1018,22 +1030,31 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
                                 normal = glm::vec3(rotation * glm::vec4(normal, 0.0f));
                                 binormal = glm::vec3(rotation * glm::vec4(binormal, 0.0f));
 
-                                normal = glm::normalize(normal);
-                                binormal = glm::normalize(glm::cross(nextTangent, normal));
-                                normal = glm::normalize(glm::cross(binormal, nextTangent));
+                                // normal = glm::normalize(normal);
+                                // binormal = glm::normalize(glm::cross(nextTangent, normal));
+                                // normal = glm::normalize(glm::cross(binormal, nextTangent));
                             }
                         }
                     }
 
                     tangent = nextTangent;
+
+                    // This is just for visualization!
+                    // Store this frame (add this line)
+                    // if (i > 0)
+                    // { // We already stored the first frame
+                    //     framePositions.push_back(currentPoint);
+                    //     frameTangents.push_back(tangent);
+                    //     frameNormals.push_back(normal);
+                    //     frameBinormals.push_back(binormal);
+                    // }
                 }
 
                 for (int j = 0; j < segments; ++j)
                 {
                     float angle = 2.0f * M_PI * j / segments;
 
-                    glm::vec3 circlePos = currentPoint +
-                                          tubeRadius * (cos(angle) * normal + sin(angle) * binormal);
+                    glm::vec3 circlePos = currentPoint + tubeRadius * (cos(angle) * normal + sin(angle) * binormal);
 
                     tubeVertices.push_back(circlePos);
 
@@ -1050,16 +1071,17 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
                 {
                     int nextJ = (j + 1) % segments;
 
-                    tubeIndices.push_back(baseIndex + j);
-                    tubeIndices.push_back(baseIndex + segments + j);
-                    tubeIndices.push_back(baseIndex + nextJ);
+                    tubeIndices.push_back(baseIndex + j);            // 0
+                    tubeIndices.push_back(baseIndex + segments + j); // 2
+                    tubeIndices.push_back(baseIndex + nextJ);        // 1
 
-                    tubeIndices.push_back(baseIndex + nextJ);
-                    tubeIndices.push_back(baseIndex + segments + j);
-                    tubeIndices.push_back(baseIndex + segments + nextJ);
+                    tubeIndices.push_back(baseIndex + nextJ);            // 1
+                    tubeIndices.push_back(baseIndex + segments + j);     // 2
+                    tubeIndices.push_back(baseIndex + segments + nextJ); // 3
                 }
             }
 
+            // Turned off for the frames viz
             unsigned int tubeVAO, tubeVBO, tubeEBO, tubeNormalVBO;
             glGenVertexArrays(1, &tubeVAO);
             glGenBuffers(1, &tubeVBO);
@@ -1090,6 +1112,62 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
             glDeleteBuffers(1, &tubeEBO);
             glDeleteBuffers(1, &tubeNormalVBO);
 
+            // This is just for visualization!
+            // if (!framePositions.empty())
+            // {
+            //     std::vector<glm::vec3> frameLines;
+            //     float lineLength = tubeRadius * 2.5f;
+
+            //     // Avoid clutter
+            //     size_t step = 5; // 1; (shows everything, be careful)
+
+            //     for (size_t i = 0; i < frameTangents.size(); i += step)
+            //     {
+            //         glm::vec3 point = framePositions[i];
+
+            //         // Add tangent line (red)
+            //         frameLines.push_back(point);
+            //         frameLines.push_back(point + lineLength * frameTangents[i]);
+
+            //         // Add normal line (green)
+            //         frameLines.push_back(point);
+            //         frameLines.push_back(point + lineLength * frameNormals[i]);
+
+            //         // Add binormal line (blue)
+            //         frameLines.push_back(point);
+            //         frameLines.push_back(point + lineLength * frameBinormals[i]);
+            //     }
+
+            //     // Draw frame lines
+            //     unsigned int frameVAO, frameVBO;
+            //     glGenVertexArrays(1, &frameVAO);
+            //     glGenBuffers(1, &frameVBO);
+            //     glBindVertexArray(frameVAO);
+            //     glBindBuffer(GL_ARRAY_BUFFER, frameVBO);
+            //     glBufferData(GL_ARRAY_BUFFER, frameLines.size() * sizeof(glm::vec3), frameLines.data(), GL_STATIC_DRAW);
+            //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+            //     glEnableVertexAttribArray(0);
+            //     glLineWidth(5.0f);
+            //     for (size_t i = 0; i < frameLines.size() / 6; i++)
+            //     {
+            //         // Tangent (red)
+            //         glUniform3f(glGetUniformLocation(shaderProgram, "meshColor1"), 1.0f, 0.0f, 0.0f);
+            //         glDrawArrays(GL_LINES, i * 6, 2);
+
+            //         // Normal (green)
+            //         glUniform3f(glGetUniformLocation(shaderProgram, "meshColor1"), 0.0f, 1.0f, 0.0f);
+            //         glDrawArrays(GL_LINES, i * 6 + 2, 2);
+
+            //         // Binormal (blue)
+            //         glUniform3f(glGetUniformLocation(shaderProgram, "meshColor1"), 0.0f, 0.0f, 1.0f);
+            //         glDrawArrays(GL_LINES, i * 6 + 4, 2);
+            //     }
+
+            //     glBindBuffer(GL_ARRAY_BUFFER, 0);
+            //     glBindVertexArray(0);
+            //     glDeleteVertexArrays(1, &frameVAO);
+            //     glDeleteBuffers(1, &frameVBO);
+
             if (isExported)
             {
                 exportTubeToObj(tubeVertices, tubeIndices, tubeNormals, "harmonograph_smooth_tube.obj");
@@ -1098,7 +1176,7 @@ void drawHarmonograph(float animationTime, bool reconstructSurface)
 
             break;
         }
-
+            //}
         default:
             break;
         }
@@ -1373,7 +1451,6 @@ int main(void)
         {
             isExported = true;
         }
-        ImGui::SameLine();
 
         ImGui::Text("Mesh Generation Methods");
         ImGui::RadioButton("Normals Extrusion", &reconstructMethod, 0);
@@ -1398,7 +1475,7 @@ int main(void)
         glUniform3fv(meshColorLoc2, 1, &meshColorTable2[meshColorID2][0]);
         glUniform3fv(viewPosLoc, 1, &camera_position[0]);
 
-        drawHarmonograph(animationTime, !isAnimating);
+        drawHarmonograph(animationTime, !isAnimating, shaderProgram);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
